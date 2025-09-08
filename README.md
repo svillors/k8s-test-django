@@ -75,3 +75,20 @@ $ docker compose build web
 `ALLOWED_HOSTS` -- настройка Django со списком разрешённых адресов. Если запрос прилетит на другой адрес, то сайт ответит ошибкой 400. Можно перечислить несколько адресов через запятую, например `127.0.0.1,192.168.0.1,site.test`. [Документация Django](https://docs.djangoproject.com/en/3.2/ref/settings/#allowed-hosts).
 
 `DATABASE_URL` -- адрес для подключения к базе данных PostgreSQL. Другие СУБД сайт не поддерживает. [Формат записи](https://github.com/jacobian/dj-database-url#url-schema).
+
+
+### K8s
+#### файл Secret
+Для того, чтобы сайт развертывался в k8s нужно создать `secret.yaml` с переменными окружения для deployment.
+Вот пример этого файла:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret
+stringData:
+  DATABASE_URL: "postgres://test_k8s:OwOtBep9Frut@YOUR_IP:5432/test_k8s"
+  ALLOWED_HOSTS: "127.0.0.1,localhost,K8S_IP"
+  SECRET_KEY: "SECRET_KEY"
+  DEBUG: "False"
+```
