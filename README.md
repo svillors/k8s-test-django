@@ -92,3 +92,24 @@ stringData:
   SECRET_KEY: "SECRET_KEY"
   DEBUG: "False"
 ```
+#### Ingress
+Для использования ingress [см. документацию](https://kubernetes.io/docs/concepts/services-networking/ingress/) в репозитории присутствует манифест.
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: start-burger.test   # поменять на ваш домен
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: django
+                port:
+                  number: 80
+```
