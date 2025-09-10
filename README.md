@@ -77,7 +77,20 @@ $ docker compose build web
 `DATABASE_URL` -- адрес для подключения к базе данных PostgreSQL. Другие СУБД сайт не поддерживает. [Формат записи](https://github.com/jacobian/dj-database-url#url-schema).
 
 
-### K8s
+### K8s Minikube
+#### Создания кластера
+Для начала работы нужно создать кластер [Minikube](https://minikube.sigs.k8s.io/docs/).
+Затем:
+- Поднимаем базу данных в docker compose (см. ниже)
+- Создаем `secret.yaml` (см. ниже)
+- И используем манифесты
+```bash
+kubectl apply -f secret.yaml
+kubectl apply -f django-service.yaml 
+kubectl apply -f django-deployment.yaml
+kubectl apply -f django-migrate-job.yaml
+```
+- Создаём Ingress для доступа к сайту (см. ниже)
 #### файл Secret
 Для того, чтобы сайт развертывался в k8s нужно создать `secret.yaml` с переменными окружения для deployment.
 Вот пример этого файла:
@@ -117,4 +130,26 @@ spec:
 В репозитории предусмотрена очистка устаревших сессий в бд. Для активации работы в кластере выполните команду:
 ```bash
 kubectl apply -f django-clearsessions.yaml
+```
+#### База данных в кластере
+Рекомендуюется использовать psql снаружи кластера, ведь так безопаснее для данных:
+```bash
+docker compose up -d db
+```
+
+Но если вы захотите развёртывать в кластере, то:
+
+- Установите [helm](https://helm.sh/)
+- затем воспользуйтесь командой
+```bash
+helm install my-release oci://registry-1.docker.io/bitnamicharts/postgresql
+```
+- Узнайте пароль бд.
+```bash
+export POSTGRES_PASSWORD=$(kubectl get secret --namespace default my-release-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
+echo $POSTGRES_PASSWORD
+```
+- В `secret.yaml` измените `DATABASE_URL` на
+```yaml
+  DATABASE_URL: "postgresql://postgres:<ВАШ-ПАРОЛЬ>@<ИМЯ-СОЗДАННОГО-POD>.default.svc.cluster.local:5432/postgres"
 ```
