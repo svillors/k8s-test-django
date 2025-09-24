@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      run: django-app
+  template:
+    metadata:
+      labels:
+        run: django-app
+    spec:
+      volumes:
+        - name: secret-volume
+          secret:
+            secretName: ssl
+            defaultMode: 429
+      containers:
+        - name: django-app
+          image: docker.io/svillors/django-site:7c746608ebe8d48bd79724af61227b4fd66c23f8
+          ports:
+          - name: http
+            containerPort: 80
+          envFrom:
+            - secretRef:
+                name: django-secret
+          volumeMounts:
+            - name: secret-volume
+              readOnly: true
+              mountPath: '/root/.postgresql'
