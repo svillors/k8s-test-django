@@ -165,3 +165,48 @@ metadata:
 stringData:
   root.crt: <копируем root.crt сюда>
 ```
+
+Для коррктной работы приложения нужно создасть secret для `django-deployment`, вот пример такого файла:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: django-secret
+stringData:
+  DATABASE_URL: "POSTGRES`_LINK"
+  ALLOWED_HOSTS: "127.0.0.1,localhost"
+  SECRET_KEY: "SECRET_KEY"
+  DEBUG: "False"
+```
+
+#### Развёртывание
+Предпологается, что в кластере уже есть ingress, настроенный на nginx, и nginx, который будет проксировать на джанго сайт.
+В репозитории имеются манифесты `django-service`и `django-deploy`:
+```bash
+kubectl apply -f django-service.yaml 
+kubectl apply -f django-deployment.yaml
+```
+
+Пример настроек, который должен быть в nginx config:
+```nginx
+      user nginx;
+      worker_processes  2;
+      events {
+        worker_connections  10240;
+      }
+      http {
+        server {
+            listen       80;
+            server_name  _;
+            location / {
+              proxy_set_header Host              $host;
+              proxy_set_header X-Real-IP         $remote_addr;
+              proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto $scheme;
+              proxy_http_version 1.1;
+              proxy_set_header Connection "";
+              proxy_pass http://django.<name-space>.svc.cluster.local:80;
+            }
+        }
+      }
+```
