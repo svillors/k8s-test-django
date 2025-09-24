@@ -154,6 +154,7 @@ echo $POSTGRES_PASSWORD
   DATABASE_URL: "postgresql://postgres:<ВАШ-ПАРОЛЬ>@<ИМЯ-СОЗДАННОГО-POD>.default.svc.cluster.local:5432/postgres"
 ```
 ### K8s YC
+[Ссылка на рабочую версию сайта](https://edu-arsenij-sarkisov.yc-sirius-dev.pelid.team/)
 #### Как подготовить dev окружение
 Для подключению к postgresql внутри POD'a нам потребуется secret с [SSL-сертификатом](https://yandex.cloud/ru/docs/managed-postgresql/operations/connect), так как он требуется для подключения Managed PostgreSQL Яндекс Облака.
 Пример secret'a:
