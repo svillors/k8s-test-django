@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate
+spec:
+  ttlSecondsAfterFinished: 60
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: docker.io/svillors/django-site:7c746608ebe8d48bd79724af61227b4fd66c23f8
+          command: ["./manage.py", "migrate", "--noinput"]
+          envFrom:
+            - secretRef:
+                name: django-secret
